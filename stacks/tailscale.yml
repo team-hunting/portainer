@@ -42,8 +42,9 @@ services:
         tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/tmp/tailscaled.sock &
         until [ -S /tmp/tailscaled.sock ]; do sleep 1; done
         tailscale --socket=/tmp/tailscaled.sock up --auth-key=${TS_AUTH_KEY} --hostname=vm-django --ssh=false
-        tailscale --socket=/tmp/tailscaled.sock serve https / proxy http://host.docker.internal:${APP_PORT}
-        tailscale --socket=/tmp/tailscaled.sock funnel ${APP_PORT} --https=443 on
+        tailscale --socket=/tmp/tailscaled.sock serve --https=443 https://host.docker.internal:${APP_PORT}
+        tailscale --socket=/tmp/tailscaled.sock funnel on
         tailscale --socket=/tmp/tailscaled.sock funnel status
         tail -f /dev/null
       '
+      
