@@ -38,7 +38,7 @@ services:
                   --ssh=false
 
         echo "🌐 Configuring Serve for Django app on port ${APP_PORT}..."
-        tailscale --socket=/var/run/tailscale/tailscaled.sock serve --https=443 http://127.0.0.1:${APP_PORT}
+        tailscale --socket=/var/run/tailscale/tailscaled.sock serve --https=443 http://172.17.0.1:${APP_PORT}
 
         echo "🌍 Enabling Funnel..."
         tailscale --socket=/var/run/tailscale/tailscaled.sock funnel on
