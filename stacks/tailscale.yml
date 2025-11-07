@@ -37,6 +37,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  staticfiles:
-  # Added volume definition for Tailscale
   tailscale_state: {}
