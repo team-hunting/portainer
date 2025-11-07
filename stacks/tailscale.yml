@@ -31,24 +31,38 @@ services:
     cap_add:
       - NET_ADMIN
       - SYS_ADMIN
-    volumes:
-      - /var/lib/tailscale:/var/lib/tailscale
-      - /dev/net/tun:/dev/net/tun
     environment:
       - TS_AUTHKEY=${TS_AUTH_KEY}
       - APP_PORT=${APP_PORT}  # change this to match your Django port
+    volumes:
+      - /var/lib/tailscale:/var/lib/tailscale   # persistent state
+      - /var/run/tailscale:/var/run/tailscale   # socket path
     command: |
       sh -c '
+        # Clean up old socket if it exists
+        rm -f /var/run/tailscale/tailscaled.sock
+
+        # Start the Tailscale daemon in userspace networking mode
         tailscaled --tun=userspace-networking \
-                  --socks5-server=localhost:1055 \
-                  --state=/var/lib/tailscale/tailscaled.state \
-                  --socket=/tmp/tailscaled.sock &
-        until [ -S /tmp/tailscaled.sock ]; do sleep 1; done
-        tailscale --socket=/tmp/tailscaled.sock up \
+                   --socks5-server=localhost:1055 \
+                   --state=/var/lib/tailscale/tailscaled.state \
+                   --socket=/var/run/tailscale/tailscaled.sock &
+
+        # Wait for the socket to appear
+        until [ -S /var/run/tailscale/tailscaled.sock ]; do echo "waiting for tailscaled..."; sleep 1; done
+
+        # Bring up Tailscale
+        tailscale --socket=/var/run/tailscale/tailscaled.sock up \
                   --auth-key=${TS_AUTH_KEY} \
                   --hostname=vm-django \
                   --ssh=false
-        tailscale --socket=/tmp/tailscaled.sock serve --https=443 http://127.0.0.1:${APP_PORT}
-        tailscale --socket=/tmp/tailscaled.sock funnel on
+
+        # Serve the local Django app over HTTPS within the tailnet
+        tailscale --socket=/var/run/tailscale/tailscaled.sock serve --https=443 http://127.0.0.1:${APP_PORT}
+
+        # Optional: enable Funnel for public exposure (if you’ve enabled it in admin panel)
+        tailscale --socket=/var/run/tailscale/tailscaled.sock funnel on
+
+        # Keep container alive
         tail -f /dev/null
       '
