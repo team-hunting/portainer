@@ -26,7 +26,7 @@ services:
     image: tailscale/tailscale:latest
     container_name: tailscale
     hostname: vm-django
-    network_mode: "bridge"  # required for funnel to bind to your app port
+    network_mode: "host"  # required for funnel to bind to your app port
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
@@ -42,9 +42,8 @@ services:
         tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/tmp/tailscaled.sock &
         until [ -S /tmp/tailscaled.sock ]; do sleep 1; done
         tailscale --socket=/tmp/tailscaled.sock up --auth-key=${TS_AUTH_KEY} --hostname=vm-django --ssh=false
-        tailscale --socket=/tmp/tailscaled.sock serve --https=443 https://host.docker.internal:${APP_PORT}
+        tailscale --socket=/tmp/tailscaled.sock serve --https=443 http://127.0.0.1:${APP_PORT}
         tailscale --socket=/tmp/tailscaled.sock funnel on
         tailscale --socket=/tmp/tailscaled.sock funnel status
         tail -f /dev/null
       '
-      
