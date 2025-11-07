@@ -18,7 +18,7 @@ services:
       # Forces the container to use userspace networking mode
       TS_USERSPACE: "true"
       # Optional: Set a recognizable hostname for the node
-      TS_HOSTNAME: "vm-django"
+      TS_HOSTNAME: ${TS_HOST_NAME}
     
     # This command funnels traffic to 127.0.0.1:8000
     # Because both containers are in "host" mode, 127.0.0.1
@@ -30,7 +30,7 @@ services:
         # Give it a few seconds just to be safe
         sleep 5
 
-        tailscale --socket=/var/run/tailscale/tailscaled.sock up --authkey=${TS_AUTH_KEY} --hostname=vm-django --accept-routes=false
+        tailscale --socket=/var/run/tailscale/tailscaled.sock up --authkey=${TS_AUTH_KEY} --hostname=${TS_HOST_NAME} --accept-routes=false
 
         tailscale --socket=/var/run/tailscale/tailscaled.sock funnel ${APP_PORT}
       "
