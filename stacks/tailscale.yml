@@ -1,21 +1,57 @@
+# services:
+#   tailscale:
+#     # image: tailscale/tailscale:latest
+#     image: tailscale/tailscale:v1.66.3
+#     hostname: vm-django # Replace with your desired hostname
+#     volumes:
+#       - /var/lib/tailscale:/var/lib/tailscale # Persist Tailscale state
+#       - /dev/net/tun:/dev/net/tun # Required for Tailscale to function
+#     cap_add:
+#       - NET_ADMIN # Required for network configuration
+#       - SYS_ADMIN # Required for network configuration
+#     environment:
+#       - TS_AUTHKEY=${TS_AUTH_KEY} # Replace with your generated auth key
+#       - TS_ACCEPT_ROUTES=true # If you want to accept advertised routes
+#       - TS_ADVERTISE_ROUTES=192.168.1.2/32 # Example: advertise your local network subnet
+#       - TS_USERSPACE=false # Run tailscaled in kernel mode (recommended)
+#       - TS_FUNNEL=true # Enable Tailscale Funnel for this node
+#       - TS_EXTRA_ARGS=--funnel ${APP_PORT} # Example: specify additional arguments
+#       # - TS_ROUTES=192.168.1.2/32 # Example: specify routes to advertise
+#     restart: unless-stopped
+#     network_mode: "host" # Use host networking 
+
+
 services:
   tailscale:
-    # image: tailscale/tailscale:latest
-    image: tailscale/tailscale:v1.66.3
-    hostname: vm-django # Replace with your desired hostname
-    volumes:
-      - /var/lib/tailscale:/var/lib/tailscale # Persist Tailscale state
-      - /dev/net/tun:/dev/net/tun # Required for Tailscale to function
-    cap_add:
-      - NET_ADMIN # Required for network configuration
-      - SYS_ADMIN # Required for network configuration
-    environment:
-      - TS_AUTHKEY=${TS_AUTH_KEY} # Replace with your generated auth key
-      - TS_ACCEPT_ROUTES=true # If you want to accept advertised routes
-      - TS_ADVERTISE_ROUTES=192.168.1.2/32 # Example: advertise your local network subnet
-      - TS_USERSPACE=false # Run tailscaled in kernel mode (recommended)
-      - TS_FUNNEL=true # Enable Tailscale Funnel for this node
-      - TS_EXTRA_ARGS=--funnel ${APP_PORT} # Example: specify additional arguments
-      # - TS_ROUTES=192.168.1.2/32 # Example: specify routes to advertise
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: vm-django
+    network_mode: "host"  # required for funnel to bind to your app port
     restart: unless-stopped
-    network_mode: "host" # Use host networking 
+    cap_add:
+      - NET_ADMIN
+      - SYS_ADMIN
+    volumes:
+      - /var/lib/tailscale:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - TS_AUTHKEY=${TS_AUTH_KEY}
+      - APP_PORT=${APP_PORT}  # change this to match your Django port
+    command: >
+      sh -c "
+        echo 'Starting tailscaled...';
+        tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/tmp/tailscaled.sock &
+        sleep 5;
+        echo 'Bringing Tailscale up with Funnel...';
+        tailscale --socket=/tmp/tailscaled.sock up
+          --auth-key=${TS_AUTH_KEY}
+          --accept-routes=true
+          --hostname=vm-django
+          --advertise-exit-node=false
+          --ssh=false
+          --reset;
+        echo 'Enabling Funnel for port ${APP_PORT}...';
+        tailscale --socket=/tmp/tailscaled.sock funnel --enable ${APP_PORT};
+        echo 'Tailscale Funnel is active!';
+        tail -f /dev/null
+      "
