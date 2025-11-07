@@ -26,7 +26,7 @@ services:
     image: tailscale/tailscale:latest
     container_name: tailscale
     hostname: vm-django
-    network_mode: "host"  # required for funnel to bind to your app port
+    network_mode: "bridge"  # required for funnel to bind to your app port
     restart: unless-stopped
     cap_add:
       - NET_ADMIN
@@ -45,7 +45,6 @@ services:
         echo "Bringing Tailscale up with Funnel...";
         tailscale --socket=/tmp/tailscaled.sock up \
           --auth-key=${TS_AUTH_KEY} \
-          --accept-routes=true \
           --hostname=vm-django \
           --advertise-exit-node=false \
           --ssh=false \
