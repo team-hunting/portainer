@@ -14,6 +14,8 @@ services:
     volumes:
       - /var/lib/tailscale:/var/lib/tailscale   # Persistent state
       - /var/run/tailscale:/var/run/tailscale   # Socket path
+    devices:
+      - /dev/net/tun:/dev/net/tun
     command: |
       sh -c '
         echo "🧹 Cleaning old socket (if any)..."
