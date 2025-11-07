@@ -37,12 +37,12 @@ services:
     environment:
       - TS_AUTHKEY=${TS_AUTH_KEY}
       - APP_PORT=${APP_PORT}  # change this to match your Django port
-    command: >
-      sh -c "
-        echo 'Starting tailscaled...';
+    command: |
+      sh -c '
+        echo "Starting tailscaled...";
         tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/tmp/tailscaled.sock &
         sleep 5;
-        echo 'Bringing Tailscale up with Funnel...';
+        echo "Bringing Tailscale up with Funnel...";
         tailscale --socket=/tmp/tailscaled.sock up \
           --auth-key=${TS_AUTH_KEY} \
           --accept-routes=true \
@@ -50,8 +50,8 @@ services:
           --advertise-exit-node=false \
           --ssh=false \
           --reset;
-        echo 'Enabling Funnel for port ${APP_PORT}...';
+        echo "Enabling Funnel for port ${APP_PORT}...";
         tailscale funnel ${APP_PORT};
-        echo 'Tailscale Funnel is active!';
+        echo "Tailscale Funnel is active!";
         tail -f /dev/null
-      "
+      '
