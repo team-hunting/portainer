@@ -30,7 +30,7 @@ services:
         # Give it a few seconds just to be safe
         sleep 5
 
-        tailscale --socket=/var/run/tailscale/tailscaled.sock up --authkey=${TS_AUTH_KEY} --hostname=vm-django
+        tailscale --socket=/var/run/tailscale/tailscaled.sock up --authkey=${TS_AUTH_KEY} --hostname=vm-django --accept-routes=false
 
         tailscale --socket=/var/run/tailscale/tailscaled.sock funnel ${APP_PORT}
       "
