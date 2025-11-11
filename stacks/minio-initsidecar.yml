@@ -2,7 +2,6 @@ services:
   minio:
     image: quay.io/minio/minio
     container_name: minio
-    network_mode: "host"
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -21,7 +20,6 @@ services:
   createbuckets:
     image: minio/mc
     container_name: initialize_minio
-    network_mode: "host"
     depends_on:
       minio:
         condition: service_healthy
