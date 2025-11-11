@@ -21,6 +21,7 @@ services:
   createbuckets:
     image: minio/mc
     container_name: initialize_minio
+    network_mode: "host"
     depends_on:
       minio:
         condition: service_healthy
