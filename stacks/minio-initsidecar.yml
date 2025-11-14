@@ -8,8 +8,6 @@ services:
     environment:
       MINIO_ROOT_USER: ${S3_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${S3_ROOT_PASSWORD}
-      # MINIO_SERVER_URL: ${MINIO_SERVER_URL}
-      # MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
@@ -18,6 +16,9 @@ services:
     volumes:
       - s3_data:/data
     command: server /data --console-address ":9001"
+    # To troubleshoot minio, exec into the minio container and run: 
+    # mc alias set myminio http://127.0.0.1:9000
+    # mc admin user -v -a myminio THEN enter ${S3_ROOT_USER} ${S3_ROOT_PASSWORD}
 
   createbuckets:
     image: minio/mc
