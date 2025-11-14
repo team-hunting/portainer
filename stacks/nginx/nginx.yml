@@ -1,5 +1,6 @@
 services:
   nginx:
+    container_name: nginx
     build: .
     network_mode: "host"
     restart: unless-stopped
