@@ -1,7 +1,5 @@
 services:
   nginx:
-    image: nginx:latest
+    build: .
     network_mode: "host"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     restart: unless-stopped
