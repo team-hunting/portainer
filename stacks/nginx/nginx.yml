@@ -3,5 +3,5 @@ services:
     image: nginx:latest
     network_mode: "host"
     volumes:
-      - ./stacks/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     restart: unless-stopped
