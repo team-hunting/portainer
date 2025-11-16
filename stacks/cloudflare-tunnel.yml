@@ -1,0 +1,10 @@
+services:
+  cloudflared:
+    container_name: cloudflare-tunnel
+    image: cloudflare/cloudflared:latest
+    network_mode: "host"
+    # command: tunnel --no-autoupdate --hostname famlib.splerm.com --url https://127.0.0.1:80
+    command: tunnel --no-autoupdate run famlib
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    restart: unless-stopped
